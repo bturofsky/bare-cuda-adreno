@@ -40,3 +40,11 @@ Trigger: an attached Snapdragon device (adb) or Linux-on-Snapdragon with Turnip.
 
 Shared acceptance harness across Bare CUDA Metal / ROCm / Arc / Adreno —
 one CUDA workload spec, four native backends, one verification record.
+
+## D6 (roadmap): the source lane
+
+Unmodified CUDA C++ / OpenCL C source compilation on the device or a
+Linux-on-Snapdragon host: clang targeting spir64 (LLVM SPIR-V path, OpenCL
+headers only) -> SPIR-V at the per-target version -> our existing validator
++ harness. Host-gated (D1 hardware first); staged honestly rather than
+faked.

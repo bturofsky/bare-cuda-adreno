@@ -34,9 +34,17 @@ SPIRV_D  := spirv-dis
 
 BUILD := build/$(ACTIVE_TARGET)
 
-.PHONY: all targets select doctor scan aot aot-all isa-cache test clean
+.PHONY: all targets select doctor scan aot aot-all isa-cache perf-gate negative test clean
 
-all: doctor scan aot isa-cache
+all: doctor scan aot isa-cache perf-gate
+
+# F5 — SPIR-V ISA-proxy performance report (per-target env).
+perf-gate: translator/ptx2llvm.bin
+	@TARGET_NAME=$(ACTIVE_TARGET) TARGET_SPIRV_ENV=$(TARGET_SPIRV_ENV) bash test/perf_gate.sh
+
+# Honest-error contract under hostile inputs (translator + scanner).
+negative: translator/ptx2llvm.bin scan/adrenoscan
+	@bash test/negative_adreno.sh
 
 # F4/D2 — the program-binary ISA cache (Adreno driver variant of A2).
 isa-cache: tools/isa_cache.bin

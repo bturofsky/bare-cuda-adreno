@@ -108,6 +108,22 @@ grep -q "adreno-830" build/targets.txt && grep -q "adreno-750" build/targets.txt
   && ok "all three GPUs listed" || bad "pull-down incomplete"
 grep -q "spv1.5" build/targets.txt && ok "SPIR-V env profiles mapped" || bad "env mapping missing"
 
+hr "SPIR-V ISA-proxy performance report (F5, static, per-target env)"
+for t in adreno-830 adreno-750 adreno-740; do
+  env=$(grep -E '^TARGET_SPIRV_ENV' "targets/$t.mk" | cut -d= -f2- | tr -d ' ')
+  maxv=$(grep -E '^TARGET_SPIRV_MAX' "targets/$t.mk" | cut -d= -f2- | tr -d ' ')
+  TARGET_NAME=$t TARGET_SPIRV_ENV=$env TARGET_SPIRV_MAX=$maxv bash test/perf_gate.sh > "build/perf_$t.txt" 2>/dev/null
+  rc=$?
+  ratio=$(grep -o 'ratio.*: [0-9.]*x' "build/perf_$t.txt" | grep -o '[0-9.]*x')
+  [ $rc -eq 0 ] && ok "$t ($env): ratio $ratio (GPU-clock gate at D1)" || bad "$t perf proxy failed"
+done
+
+hr "negative-test inventory (honest-error contract)"
+bash test/negative_adreno.sh > build/negadreno.txt 2>&1
+rc=$?
+grep -c "PASS" build/negadreno.txt | head -1 | sed 's/^/    passed cases: /'
+[ $rc -eq 0 ] && ok "all hostile inputs produce the named hard-fail contract" || bad "negative inventory failed"
+
 hr "ISA cache — the sanctioned thin path (F4/D2)"
 make --no-print-directory tools/isa_cache.bin > /dev/null 2>&1
 check "isa_cache builds warning-free" $?
