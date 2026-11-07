@@ -79,6 +79,22 @@ make doctor           # toolchain audit
    (`--spirv-max-version`), so older SoC profiles get strictly older-env
    validation — an artifact that passes spv1.3 also documents why it must.
 
+## What "bare" rules out — four structural guarantees
+
+- **No runtime API interception or hooking.** The v0 pipeline is a pure
+  compiler lane (scanner → translator → LLVM → SPIR-V); nothing watches or
+  patches a driver. The hardware gate will consume the artifact through the
+  device's own OpenCL/Vulkan stack — the vendor's official path.
+- **No interpreter, no per-call bytecode translation.** Kernels are
+  translated once, ahead of time, into per-target validated SPIR-V
+  binaries. No translator exists anywhere on the execution path.
+- **No wrapper emulating the CUDA driver.** No emulation layer: the
+  artifacts are ordinary OpenCL-kernel SPIR-V modules the Adreno driver
+  compiles to ISA exactly like any natively-built mobile GPU binary.
+- **Unsupported PTX → hard-fail with the opcode named.** `ptx2llvm` exits 2
+  with the opcode on stderr — proven by the honesty test in the 28-check
+  harness. A slow-but-wrong fallback is structurally impossible.
+
 ## What's next
 
 - **Phase 2 (hardware gate):** push the `.spv` over adb, load + launch on
