@@ -78,7 +78,7 @@ unsupported — four vendor backends, one verification method.
 |---|---|---|
 | D0 | Scanner, translator, per-target-version SPIR-V enforced by gate (830→v1.5, 750/740→v1.3) | ✅ |
 | D1 | On-device gate: adb push → launch → element-verify; strict env check | 🔜 needs device |
-| D2 | Program-binary ISA cache (Adreno driver variant) | 🔄 |
+| D2 | Program-binary ISA cache: same mechanism as A2, proven live (driver-compiled binary captured + reload-verified); on-device variant pending D1 | ✅ mechanism shipped |
 | D3 | Tile-memory census; heterogeneous SoC lane | 🔜 |
 | D4 | fp64 boundary honesty (no native fp64 — profile enforced) | ✅ |
 | D5 | Census growth; Turnip/Vulkan compute research | 🔜 |

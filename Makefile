@@ -34,9 +34,16 @@ SPIRV_D  := spirv-dis
 
 BUILD := build/$(ACTIVE_TARGET)
 
-.PHONY: all targets select doctor scan aot aot-all test clean
+.PHONY: all targets select doctor scan aot aot-all isa-cache test clean
 
-all: doctor scan aot
+all: doctor scan aot isa-cache
+
+# F4/D2 — the program-binary ISA cache (Adreno driver variant of A2).
+isa-cache: tools/isa_cache.bin
+	@./tools/isa_cache.bin
+
+tools/isa_cache.bin: tools/isa_cache.c
+	$(CC) -O2 -std=c11 -Wall -Wextra -Werror -Wno-deprecated-declarations -framework OpenCL -o $@ tools/isa_cache.c
 
 targets:
 	@echo "Bare CUDA Adreno — target pull-down"

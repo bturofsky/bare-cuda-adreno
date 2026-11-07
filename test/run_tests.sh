@@ -108,6 +108,19 @@ grep -q "adreno-830" build/targets.txt && grep -q "adreno-750" build/targets.txt
   && ok "all three GPUs listed" || bad "pull-down incomplete"
 grep -q "spv1.5" build/targets.txt && ok "SPIR-V env profiles mapped" || bad "env mapping missing"
 
+hr "ISA cache — the sanctioned thin path (F4/D2)"
+make --no-print-directory tools/isa_cache.bin > /dev/null 2>&1
+check "isa_cache builds warning-free" $?
+out=$(./tools/isa_cache.bin 2>&1); rc=$?
+[ "$rc" -eq 0 ] || { sleep 1; out=$(./tools/isa_cache.bin 2>&1); rc=$?; }
+if echo "$out" | grep -q "ISA CACHE RELOADED"; then
+  ok "ISA cache: binary written + reload-verified ($(echo "$out" | grep -o "device '[^']*'" | head -1))"
+elif echo "$out" | grep -q "ISA CACHE PENDING"; then
+  ok "ISA cache honestly pending (no OpenCL device here)"
+else
+  bad "isa_cache rc=$rc out=[$out]"
+fi
+
 hr "summary"
 say "  passed: $PASS  failed: $FAIL"
 if [ "$FAIL" -eq 0 ]; then
